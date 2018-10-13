@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.smbms.dao.UserMapper">
+
+
+	<select id="getuserlogin" resultType="User">
+		SELECT * FROM smbms_user
+		<trim prefix="where" prefixOverrides="and | or">
+			<if test="userCode!=null and userCode!=''">and userCode=#{userCode} </if>
+		</trim>
+	</select>
+
+	<select id="getuserList" resultType="User" resultMap="getuserrole">
+		SELECT * FROM smbms_user u,smbms_role r where u.userRole=r.id
+		<if test="userName!=null and userName!=''">
+			AND u.userName LIKE CONCAT('%',#{userName},'%')
+		</if>
+		<if test="userRole!=null and userRole>0">
+			AND u.userRole=#{userRole}
+		</if>
+		GROUP BY u.creationDate DESC
+		LIMIT #{currPageNo},#{currPageSize}
+	</select>
+	<!-- 映射 -->
+	<resultMap type="User" id="getuserrole">
+		<id column="id" property="id" />
+		<collection property="role" javaType="Role">
+			<id column="id" property="id" />
+		</collection>
+	</resultMap>
+
+
+	<select id="getuserCount" resultType="int">
+		SELECT COUNT(1) FROM smbms_user
+		<trim prefix="where" prefixOverrides="and | or">
+			<if test="userName!=null and userName!=''">
+				AND userName LIKE CONCAT('%',#{userName},'%')
+			</if>
+			<if test="userRole!=null and userRole>0">
+				AND userRole=#{userRole}
+			</if>
+		</trim>
+	</select>
+
+
+	<select id="getUserById" resultType="User" resultMap="getuserbyid">
+		SELECT *
+		FROM smbms_user u,smbms_role r WHERE u.id=#{userId} AND
+		u.userRole=r.id
+	</select>
+	<resultMap type="User" id="getuserbyid">
+		<id column="id" property="id" />
+		<collection property="role" javaType="Role">
+			<id column="id" property="id" />
+		</collection>
+	</resultMap>
+
+
+	<select id="userisnullCount" resultType="int">
+		SELECT COUNT(1) FROM
+		smbms_user WHERE userCode=#{userCode}
+	</select>
+
+
+	<insert id="insertUser">
+		INSERT INTO
+		smbms_user(userCode,userName,userPassword,gender,birthday,phone,address,userRole,createdBy,creationDate)
+		VALUES (#{userCode},#{userName},#{userPassword},#{gender},#{birthday},
+		#{phone},#{address},#{userRole},#{createdBy},#{creationDate});
+	</insert>
+
+	<update id="updateUser">
+		UPDATE smbms_user
+		<trim prefix="set" prefixOverrides="," suffixOverrides="where id=#{id}">
+			<if test="userCode!=null">userCode=#{userCode},</if>
+			<if test="userName!=null">userName=#{userName},</if>
+			<if test="userPassword!=null">userPassword=#{userPassword},</if>
+			<if test="gender!=null">gender=#{gender},</if>
+			<if test="birthday!=null">birthday=#{birthday},</if>
+			<if test="phone!=null">phone=#{phone},</if>
+			<if test="address!=null">address=#{address},</if>
+			<if test="userRole!=null">userRole=#{userRole},</if>
+			<if test="modifyBy!=null">modifyBy=#{modifyBy},</if>
+			<if test="modifyDate!=null">modifyDate=#{modifyDate}</if>
+		</trim>
+	</update>
+	
+	
+	<delete id="deleteUser">
+	DELETE from smbms_user WHERE id=#{userId}
+	</delete>
+</mapper>
